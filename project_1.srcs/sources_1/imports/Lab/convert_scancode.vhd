@@ -9,42 +9,69 @@
 --
 -------------------------------------------------------------------------------
 
-library ieee;
-use ieee.numeric_std.all;
-use ieee.std_logic_1164.all;
+LIBRARY ieee;
+USE ieee.numeric_std.ALL;
+USE ieee.std_logic_1164.ALL;
 
-entity convert_scancode is
-    port (
-	     clk : in std_logic;
-	     rst : in std_logic;
-	     edge_found : in std_logic;
-	     serial_data : in std_logic;
-	     valid_scan_code : out std_logic;
-	     scan_code_out : out unsigned(7 downto 0)
-	 );
-end convert_scancode;
+ENTITY convert_scancode IS
+    PORT (
+        clk : IN STD_LOGIC;
+        rst : IN STD_LOGIC;
+        edge_found : IN STD_LOGIC;
+        serial_data : IN STD_LOGIC;
+        valid_scan_code : OUT STD_LOGIC;
+        scan_code_out : OUT unsigned(7 DOWNTO 0)
+    );
+END ENTITY convert_scancode;
 
-architecture convert_scancode_arch of convert_scancode is
-    signal shift_register: std_logic_vector(10 downto 0) := (others => '0');
-    signal bit_counter: unsigned(3 downto 0) := (others => '0');
-begin
-process (edge_found, rst, serial_data)
-	begin
-	    if rst = '1' then
-            shift_register <= (others => '0');
-            bit_counter <= (others => '0');
+ARCHITECTURE convert_scancode_arch OF convert_scancode IS
+    SIGNAL shift_register : STD_LOGIC_VECTOR(10 DOWNTO 0) := (OTHERS => '0');
+    SIGNAL bit_counter : unsigned(3 DOWNTO 0) := (OTHERS => '0');
+
+    SIGNAL internal_scan_code : unsigned(7 DOWNTO 0);
+
+    -- Signals for next state
+    SIGNAL next_shift_register : STD_LOGIC_VECTOR(10 DOWNTO 0);
+    SIGNAL next_bit_counter : unsigned(3 DOWNTO 0);
+    SIGNAL next_valid_scan_code : STD_LOGIC;
+    SIGNAL next_internal_scan_code : unsigned(7 DOWNTO 0);
+BEGIN
+    -- Sequential Process
+    seq_process : PROCESS (edge_found, rst)
+    BEGIN
+        IF rst = '1' THEN
+            shift_register <= (OTHERS => '0');
+            bit_counter <= (OTHERS => '0');
             valid_scan_code <= '0';
-            scan_code_out <= (others => '0');
-        elsif rising_edge(edge_found) then
-            shift_register <= serial_data & shift_register(10 downto 1);
-            if bit_counter = 10 then
-                scan_code_out <= unsigned(shift_register(9 downto 2)); -- if i understand that startbit should be discarded. Else 7 downto 0));
-                valid_scan_code <= '1';
-                bit_counter <= (others => '0');
-            else
-                bit_counter <= bit_counter + 1;
-                valid_scan_code <= '0';  -- Default state
-            end if;
-        end if;
-	end process;
-end convert_scancode_arch;
+            internal_scan_code <= (OTHERS => '0');
+        ELSIF rising_edge(edge_found) THEN
+            shift_register <= next_shift_register;
+            bit_counter <= next_bit_counter;
+            valid_scan_code <= next_valid_scan_code;
+            internal_scan_code <= next_internal_scan_code;
+        END IF;
+    END PROCESS seq_process;
+
+    -- Combinational Process
+    comb_process : PROCESS (serial_data, shift_register, bit_counter, internal_scan_code)
+    BEGIN
+        -- Default assignments
+        next_shift_register <= shift_register;
+        next_bit_counter <= bit_counter;
+        next_valid_scan_code <= '0'; -- Default state
+        next_internal_scan_code <= internal_scan_code;
+
+        next_shift_register <= serial_data & shift_register(10 DOWNTO 1);
+
+        IF bit_counter = 10 THEN
+            next_internal_scan_code <= unsigned(shift_register(9 DOWNTO 2));
+            next_valid_scan_code <= '1';
+            next_bit_counter <= (OTHERS => '0');
+        ELSE
+            next_bit_counter <= bit_counter + 1;
+        END IF;
+    END PROCESS comb_process;
+
+    -- Continuous assignment to output
+    scan_code_out <= internal_scan_code;
+END ARCHITECTURE convert_scancode_arch;

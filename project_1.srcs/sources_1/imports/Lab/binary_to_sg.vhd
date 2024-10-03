@@ -9,47 +9,45 @@
 --
 -------------------------------------------------------------------------------
 
-library ieee;
-use ieee.numeric_std.all;
-use ieee.std_logic_1164.all;
+LIBRARY ieee;
+USE ieee.numeric_std.ALL;
+USE ieee.std_logic_1164.ALL;
+ENTITY binary_to_sg IS
+    PORT (
+        binary_in : IN unsigned(3 DOWNTO 0);
+        sev_seg : OUT unsigned(7 DOWNTO 0)
+    );
+END binary_to_sg;
 
-
-entity binary_to_sg is
-    port (
-	     binary_in : in unsigned(3 downto 0);
-	     sev_seg   : out unsigned(7 downto 0)
-	 );
-end binary_to_sg;
-
-architecture binary_to_sg_arch of binary_to_sg is
-begin
-process(binary_in)
-begin
-    sev_seg <= "10000110";
-    if binary_in = "0000" then
-        sev_seg <= "11000000";
-    elsif binary_in = "0001" then
-        sev_seg <= "11111001";
-    elsif binary_in = "0010" then
-        sev_seg <= "10100100";     
-    elsif binary_in = "0011" then
-        sev_seg <= "10110000";
-    elsif binary_in = "0011" then
-        sev_seg <= "10110000";
-    elsif binary_in = "0100" then
-        sev_seg <= "10011001";
-    elsif binary_in = "0101" then
-        sev_seg <= "10010010";
-    elsif binary_in = "0110" then
-        sev_seg <= "10000010";
-    elsif binary_in = "0111" then
-        sev_seg <= "11111000";
-    elsif binary_in = "1000" then
-        sev_seg <= "10000000";
-    elsif binary_in = "1001" then
-        sev_seg <= "10010000";
-    elsif binary_in = "1111" then
+ARCHITECTURE binary_to_sg_arch OF binary_to_sg IS
+BEGIN
+    PROCESS (binary_in)
+    BEGIN
         sev_seg <= "10000110";
-    end if;
-end process;
-end binary_to_sg_arch;
+        IF binary_in = "0000" THEN
+            sev_seg <= "11000000";
+        ELSIF binary_in = "0001" THEN
+            sev_seg <= "11111001";
+        ELSIF binary_in = "0010" THEN
+            sev_seg <= "10100100";
+        ELSIF binary_in = "0011" THEN
+            sev_seg <= "10110000";
+        ELSIF binary_in = "0011" THEN
+            sev_seg <= "10110000";
+        ELSIF binary_in = "0100" THEN
+            sev_seg <= "10011001";
+        ELSIF binary_in = "0101" THEN
+            sev_seg <= "10010010";
+        ELSIF binary_in = "0110" THEN
+            sev_seg <= "10000010";
+        ELSIF binary_in = "0111" THEN
+            sev_seg <= "11111000";
+        ELSIF binary_in = "1000" THEN
+            sev_seg <= "10000000";
+        ELSIF binary_in = "1001" THEN
+            sev_seg <= "10010000";
+        ELSIF binary_in = "1111" THEN
+            sev_seg <= "10000110";
+        END IF;
+    END PROCESS;
+END binary_to_sg_arch;

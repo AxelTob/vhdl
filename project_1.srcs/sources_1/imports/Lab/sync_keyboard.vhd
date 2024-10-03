@@ -3,38 +3,36 @@
 -- Project    : Keyboard VLSI Lab
 -------------------------------------------------------------------------------
 
-library ieee;
-use ieee.numeric_std.all;
-use ieee.std_logic_1164.all;
+LIBRARY ieee;
+USE ieee.numeric_std.ALL;
+USE ieee.std_logic_1164.ALL;
 
-entity sync_keyboard is
-    port (
-	     clk : in std_logic; 
-	     kb_clk : in std_logic;
-	     kb_data : in std_logic;
-	     kb_clk_sync : out std_logic;
-	     kb_data_sync : out std_logic
-	 );
-end sync_keyboard;
+ENTITY sync_keyboard IS
+	PORT (
+		clk : IN STD_LOGIC;
+		kb_clk : IN STD_LOGIC;
+		kb_data : IN STD_LOGIC;
+		kb_clk_sync : OUT STD_LOGIC;
+		kb_data_sync : OUT STD_LOGIC
+	);
+END sync_keyboard;
 
-architecture sync_keyboard_arch of sync_keyboard is
-    type sync_array is array(0 to 1) of std_logic;
-    -- not sure about good default values
-    signal kb_clk_ff : sync_array := (others => '0');
-    signal kb_data_ff : sync_array := (others => '0');
+ARCHITECTURE sync_keyboard_arch OF sync_keyboard IS
+	TYPE sync_array IS ARRAY(0 TO 1) OF STD_LOGIC;
+	SIGNAL kb_clk_ff : sync_array := (OTHERS => '0');
+	SIGNAL kb_data_ff : sync_array := (OTHERS => '0');
 
-begin
-	process (clk, kb_clk, kb_data)
-	begin	   
-		if rising_edge(clk) then
+BEGIN
+	PROCESS (clk, kb_clk, kb_data)
+	BEGIN
+		IF rising_edge(clk) THEN
 			kb_clk_ff(0) <= kb_clk;
 			kb_clk_ff(1) <= kb_clk_ff(0);
-			
-			-- same for data
+
 			kb_data_ff(0) <= kb_data;
 			kb_data_ff(1) <= kb_data_ff(0);
-		end if;
-	end process;
-    kb_clk_sync <= kb_clk_ff(1);
-    kb_data_sync <= kb_data_ff(1);
-end sync_keyboard_arch;
+		END IF;
+	END PROCESS;
+	kb_clk_sync <= kb_clk_ff(1);
+	kb_data_sync <= kb_data_ff(1);
+END sync_keyboard_arch;

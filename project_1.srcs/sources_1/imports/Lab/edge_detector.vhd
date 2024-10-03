@@ -9,40 +9,34 @@
 --
 -------------------------------------------------------------------------------
 
-library ieee;
-use ieee.numeric_std.all;
-use ieee.std_logic_1164.all;
-
-
-entity edge_detector is
-    port (
-	     clk : in std_logic;
-	     rst : in std_logic;
-	     kb_clk_sync : in std_logic;
-	     edge_found : out std_logic
-	 );
-end edge_detector;
-
-
-architecture edge_detector_arch of edge_detector is
-    type sync_array is array(0 to 1) of std_logic;
-    -- not sure about good default values
-    signal kb_samples_ff : sync_array := (others => '0');
-begin
-    process (kb_clk_sync, rst, clk)
-	begin
-	    if rst = '1' then
-	       kb_samples_ff <= (others => '0');
-	       edge_found <= '0';
-	    elsif rising_edge(clk) then
-		    kb_samples_ff(0) <= kb_clk_sync;
+LIBRARY ieee;
+USE ieee.numeric_std.ALL;
+USE ieee.std_logic_1164.ALL;
+ENTITY edge_detector IS
+	PORT (
+		clk : IN STD_LOGIC;
+		rst : IN STD_LOGIC;
+		kb_clk_sync : IN STD_LOGIC;
+		edge_found : OUT STD_LOGIC
+	);
+END edge_detector;
+ARCHITECTURE edge_detector_arch OF edge_detector IS
+	TYPE sync_array IS ARRAY(0 TO 1) OF STD_LOGIC;
+	SIGNAL kb_samples_ff : sync_array := (OTHERS => '0');
+BEGIN
+	PROCESS (kb_clk_sync, rst, clk)
+	BEGIN
+		IF rst = '1' THEN
+			kb_samples_ff <= (OTHERS => '0');
+			edge_found <= '0';
+		ELSIF rising_edge(clk) THEN
+			kb_samples_ff(0) <= kb_clk_sync;
 			kb_samples_ff(1) <= kb_samples_ff(0);
-			
-			if kb_samples_ff(1) = '1' and kb_samples_ff(0) = '0' then
-			     edge_found <= '1';
-		    else
-		      edge_found <= '0';
-			end if;
-		end if;
-	end process;
-end edge_detector_arch;
+			IF kb_samples_ff(1) = '1' AND kb_samples_ff(0) = '0' THEN
+				edge_found <= '1';
+			ELSE
+				edge_found <= '0';
+			END IF;
+		END IF;
+	END PROCESS;
+END edge_detector_arch;
