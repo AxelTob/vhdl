@@ -22,7 +22,7 @@ ARCHITECTURE keyboard_ctrl_arch OF keyboard_ctrl IS
 	SIGNAL next_shift_scancode : unsigned(31 DOWNTO 0) := (OTHERS => '0');
 
 BEGIN
-	PROCESS (rst, clk)
+	PROCESS (rst, clk, next_got_break, next_shift_scancode, next_bit_counter)
 	BEGIN
 		IF rising_edge(clk) THEN
 			IF rst = '1' THEN
@@ -84,7 +84,7 @@ BEGIN
 		END IF;
 	END PROCESS;
 
-	PROCESS (bit_counter) --use bit_counter to decide which one shoud be on display;
+	PROCESS (bit_counter, shift_scancode) --use bit_counter to decide which one shoud be on display;
 	BEGIN
 		CASE bit_counter IS
 			WHEN "1110" =>
