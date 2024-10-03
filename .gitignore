@@ -1,0 +1,11 @@
+# Ignore everything
+*
+
+# Don't ignore .gitignore
+!.gitignore
+
+# Allow .srcs directory
+!project_1.srcs/
+
+# Allow all files and folders under .srcs
+!project_1.srcs/**
