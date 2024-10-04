@@ -43,8 +43,10 @@ BEGIN
 			binary_out <= "1001";
 		ELSIF scan_code_in = "01000101" THEN
 			binary_out <= "0000";
+		ELSIF scan_code_in = "11111111" then
+		    binary_out <= "1111";
 		ELSE
-			binary_out <= "1111"; --E 
+			binary_out <= "1110"; --E 
 		END IF;
 	END PROCESS;
 END convert_to_binary_arch;

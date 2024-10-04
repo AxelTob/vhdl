@@ -46,8 +46,10 @@ BEGIN
             sev_seg <= "10000000";
         ELSIF binary_in = "1001" THEN
             sev_seg <= "10010000";
-        ELSIF binary_in = "1111" THEN
+        ELSIF binary_in = "1110" THEN
             sev_seg <= "10000110";
+        ELSIF binary_in = "1111" THEN
+            sev_seg <= "11111111";
         END IF;
     END PROCESS;
 END binary_to_sg_arch;

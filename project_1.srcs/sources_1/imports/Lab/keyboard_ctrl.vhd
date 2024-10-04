@@ -17,19 +17,19 @@ ARCHITECTURE keyboard_ctrl_arch OF keyboard_ctrl IS
 	SIGNAL next_bit_counter : unsigned(3 DOWNTO 0) := (OTHERS => '1');
 	SIGNAL got_break : STD_LOGIC := '0';
 	SIGNAL next_got_break : STD_LOGIC := '0';
-	SIGNAL clk_counter : INTEGER RANGE 0 TO 4999999 := 0;
-	SIGNAL shift_scancode : unsigned(31 DOWNTO 0) := (OTHERS => '0');
-	SIGNAL next_shift_scancode : unsigned(31 DOWNTO 0) := (OTHERS => '0');
+	SIGNAL clk_counter : INTEGER RANGE 0 TO 9999 := 0;
+	SIGNAL shift_scancode : unsigned(31 DOWNTO 0) := (OTHERS => '1');
+	SIGNAL next_shift_scancode : unsigned(31 DOWNTO 0) := (OTHERS => '1');
 
 BEGIN
-	PROCESS (rst, clk, next_got_break, next_shift_scancode, next_bit_counter)
+	PROCESS (rst, clk)
 	BEGIN
 		IF rising_edge(clk) THEN
 			IF rst = '1' THEN
 				got_break <= '0';
-				shift_scancode <= (OTHERS => '0');
+				shift_scancode <= (OTHERS => '1');
 				clk_counter <= 0;
-				bit_counter <= "1110"; -- Initial value
+				bit_counter <= "1111"; -- Initial value
 				seg_en <= "1111"; -- All enabled initially
 			ELSE
 				got_break <= next_got_break;
