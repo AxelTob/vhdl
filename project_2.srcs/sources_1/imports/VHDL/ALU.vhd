@@ -55,7 +55,7 @@ begin
                 result <= std_logic_vector(to_unsigned(to_integer(unsigned_a) mod 3, 8));
             
             when "1010" => -- Signed (A + B)
-                temp_result := resize(signed_a, 9) + resize(signed_b, 9);
+                temp_result := resize(signed_a, 9) + resize(signed_b, 9); -- '0' & ...
                 result <= std_logic_vector(temp_result(7 downto 0));
                 --inputs have same sign, input and result sign differ
                 overflow <= (signed_a(7) xnor signed_b(7)) and (signed_a(7) xor temp_result(7)); 

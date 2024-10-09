@@ -35,4 +35,8 @@ begin
    -- DEVELOPE THE STRUCTURE OF ALU_TOP HERE
    -- ****************************
 
+
+-- Here we need to map all the parts. The inputs from each component, how to map. Which output is input to another component
+-- and so forth. Given in previous labs.
+
 end structural;
