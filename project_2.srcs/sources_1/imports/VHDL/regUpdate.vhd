@@ -1,46 +1,47 @@
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
+LIBRARY ieee;
+USE ieee.std_logic_1164.ALL;
+USE ieee.numeric_std.ALL;
 
-entity regUpdate is
-   port ( clk        : in  std_logic;
-          reset      : in  std_logic;
-          RegCtrl    : in  std_logic_vector (1 downto 0);
-          input      : in  std_logic_vector (7 downto 0);
-          A          : out std_logic_vector (7 downto 0);
-          B          : out std_logic_vector (7 downto 0)
-        );
-end regUpdate;
+ENTITY regUpdate IS
+    PORT (
+        clk : IN STD_LOGIC;
+        reset : IN STD_LOGIC;
+        RegCtrl : IN STD_LOGIC_VECTOR (1 DOWNTO 0);
+        input : IN STD_LOGIC_VECTOR (7 DOWNTO 0);
+        A : OUT STD_LOGIC_VECTOR (7 DOWNTO 0);
+        B : OUT STD_LOGIC_VECTOR (7 DOWNTO 0)
+    );
+END regUpdate;
 
-architecture behavioral of regUpdate is
-    signal next_A, next_B : std_logic_vector(7 downto 0);
-begin
+ARCHITECTURE behavioral OF regUpdate IS
+    SIGNAL next_A, next_B : STD_LOGIC_VECTOR(7 DOWNTO 0);
+BEGIN
     -- Combinational part
-    process(RegCtrl, input)
-    begin
-        next_A <= (others =>'0');
-        next_B <= (others =>'0');
-        
-        case RegCtrl is
-            when "01" =>  -- Update A
+    PROCESS (RegCtrl, input)
+    BEGIN
+        next_A <= (OTHERS => '0');
+        next_B <= (OTHERS => '0');
+
+        CASE RegCtrl IS
+            WHEN "01" => -- Update A
                 next_A <= input;
-            when "10" =>  -- Update B
+            WHEN "10" => -- Update B
                 next_B <= input;
-            when others => 
+            WHEN OTHERS =>
                 -- nothing?
-        end case;
-    end process;
+        END CASE;
+    END PROCESS;
 
     -- Sequential part
-    process(clk, reset)
-    begin
-        if reset = '1' then 
-            A <= (others => '0');
-            B <= (others => '0');
-        elsif rising_edge(clk) then
+    PROCESS (clk, reset)
+    BEGIN
+        IF reset = '1' THEN
+            A <= (OTHERS => '0');
+            B <= (OTHERS => '0');
+        ELSIF rising_edge(clk) THEN
             A <= next_A;
             B <= next_B;
-        end if;
-    end process;
+        END IF;
+    END PROCESS;
 
-end behavioral;
+END behavioral;

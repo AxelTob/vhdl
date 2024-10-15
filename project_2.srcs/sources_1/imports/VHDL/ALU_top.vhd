@@ -1,98 +1,162 @@
-library ieee;
-use ieee.std_logic_1164.all;
-library work;
-use work.ALU_components_pack.all;
+LIBRARY ieee;
+USE ieee.std_logic_1164.ALL;
+USE ieee.numeric_std.ALL;
 
-entity ALU_top is
-   port ( 
-      clk        : in  std_logic;
-      reset      : in  std_logic;
-      b_Enter    : in  std_logic;
-      b_Sign     : in  std_logic;
-      input      : in  std_logic_vector(7 downto 0);
-      seven_seg  : out std_logic_vector(6 downto 0);
-      anode      : out std_logic_vector(3 downto 0)
+ENTITY ALU_top IS
+   PORT (
+      clk : IN STD_LOGIC;
+      reset : IN STD_LOGIC;
+      b_Enter : IN STD_LOGIC;
+      b_Sign : IN STD_LOGIC;
+      input : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
+      seven_seg : OUT STD_LOGIC_VECTOR(6 DOWNTO 0);
+      anode : OUT STD_LOGIC_VECTOR(3 DOWNTO 0)
    );
-end ALU_top;
+END ALU_top;
 
-architecture structural of ALU_top is
-   -- SIGNAL DEFINITIONS
-   signal Enter, Sign : std_logic;
-   signal A, B, ALU_result : std_logic_vector(7 downto 0);
-   signal FN : std_logic_vector(3 downto 0);
-   signal RegCtrl : std_logic_vector(1 downto 0);
-   signal overflow, sign_out : std_logic;
-   signal BCD_result : std_logic_vector(9 downto 0);
+ARCHITECTURE structural OF ALU_top IS
+   COMPONENT debouncer
+      PORT (
+         clk : IN STD_LOGIC;
+         reset : IN STD_LOGIC;
+         button_in : IN STD_LOGIC;
+         button_out : OUT STD_LOGIC
+      );
+   END COMPONENT;
 
-begin
+   COMPONENT ALU_ctrl
+      PORT (
+         clk : IN STD_LOGIC;
+         reset : IN STD_LOGIC;
+         enter : IN STD_LOGIC;
+         sign : IN STD_LOGIC;
+         FN : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
+         RegCtrl : OUT STD_LOGIC_VECTOR(1 DOWNTO 0)
+      );
+   END COMPONENT;
+
+   COMPONENT regUpdate
+      PORT (
+         clk : IN STD_LOGIC;
+         reset : IN STD_LOGIC;
+         RegCtrl : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
+         input : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
+         A : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
+         B : OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
+      );
+   END COMPONENT;
+
+   COMPONENT ALU
+      PORT (
+         A : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
+         B : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
+         FN : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
+         result : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
+         overflow : OUT STD_LOGIC;
+         sign : OUT STD_LOGIC
+      );
+   END COMPONENT;
+
+   COMPONENT binary2BCD
+      PORT (
+         binary_in : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
+         BCD_out : OUT STD_LOGIC_VECTOR(9 DOWNTO 0);
+         clk : IN STD_LOGIC;
+         reset : IN STD_LOGIC
+      );
+   END COMPONENT;
+
+   COMPONENT seven_seg_driver
+      PORT (
+         clk : IN STD_LOGIC;
+         reset : IN STD_LOGIC;
+         BCD_digit : IN STD_LOGIC_VECTOR(9 DOWNTO 0);
+         sign : IN STD_LOGIC;
+         overflow : IN STD_LOGIC;
+         DIGIT_ANODE : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
+         SEGMENT : OUT STD_LOGIC_VECTOR(6 DOWNTO 0)
+      );
+   END COMPONENT;
+
+   -- Internal signals
+   SIGNAL Enter, Sign : STD_LOGIC;
+   SIGNAL A, B, ALU_result : STD_LOGIC_VECTOR(7 DOWNTO 0);
+   SIGNAL FN : STD_LOGIC_VECTOR(3 DOWNTO 0);
+   SIGNAL RegCtrl : STD_LOGIC_VECTOR(1 DOWNTO 0);
+   SIGNAL overflow, sign_out : STD_LOGIC;
+   SIGNAL BCD_out : STD_LOGIC_VECTOR(9 DOWNTO 0);
+
+BEGIN
    -- Debouncer for Enter button
-   debouncer1: debouncer
-   port map (
-      clk          => clk,
-      reset        => reset,
-      button_in    => b_Enter,
-      button_out   => Enter
+   debouncer1 : debouncer
+   PORT MAP(
+      clk => clk,
+      reset => reset,
+      button_in => b_Enter,
+      button_out => Enter
    );
 
    -- Debouncer for Sign button
-   debouncer2: debouncer
-   port map (
-      clk          => clk,
-      reset        => reset,
-      button_in    => b_Sign,
-      button_out   => Sign
+   debouncer2 : debouncer
+   PORT MAP(
+      clk => clk,
+      reset => reset,
+      button_in => b_Sign,
+      button_out => Sign
    );
 
    -- ALU Controller
-   controller: ALU_ctrl
-   port map (
-      clk     => clk,
-      reset   => reset,
-      enter   => Enter,
-      sign    => Sign,
-      FN      => FN,
+   alu_controller : ALU_ctrl
+   PORT MAP(
+      clk => clk,
+      reset => reset,
+      enter => Enter,
+      sign => Sign,
+      FN => FN,
       RegCtrl => RegCtrl
    );
 
    -- Register Update
-   reg_update: regUpdate
-   port map (
-      clk     => clk,
-      reset   => reset,
+   reg_update : regUpdate
+   PORT MAP(
+      clk => clk,
+      reset => reset,
       RegCtrl => RegCtrl,
-      input   => input,
-      A       => A,
-      B       => B
+      input => input,
+      A => A,
+      B => B
    );
 
    -- ALU
-   alu_unit: ALU
-   port map (
-      A        => A,
-      B        => B,
-      FN       => FN,
-      result   => ALU_result,
+   alu_unit : ALU
+   PORT MAP(
+      A => A,
+      B => B,
+      FN => FN,
+      result => ALU_result,
       overflow => overflow,
-      sign     => sign_out
+      sign => sign_out
    );
 
    -- Binary to BCD Converter
-   bi_bcd: Bi_to_BCD
-   port map (
+   bcd_converter : binary2BCD
+   PORT MAP(
       binary_in => ALU_result,
-      BCD_out   => BCD_result
+      BCD_out => BCD_out,
+      clk => clk,
+      reset => reset
    );
 
    -- 7-Segment Display Driver
-   seg7_driver: seg7_driver
-   port map (
-      clk       => clk,
-      reset     => reset,
-      BCD_in    => BCD_result,
-      overflow  => overflow,
-      sign      => sign_out,
-      seven_seg => seven_seg,
-      anode     => anode
+   seg7_driver : seven_seg_driver
+   PORT MAP(
+      clk => clk,
+      reset => reset,
+      BCD_digit => BCD_out,
+      sign => sign_out,
+      overflow => overflow,
+      DIGIT_ANODE => anode,
+      SEGMENT => seven_seg
    );
 
-end structural;
+END structural;

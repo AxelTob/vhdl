@@ -1,63 +1,63 @@
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
-library work;
-use work.ALU_components_pack.all;
+LIBRARY ieee;
+USE ieee.std_logic_1164.ALL;
+USE ieee.numeric_std.ALL;
+LIBRARY work;
+USE work.ALU_components_pack.ALL;
 
-entity binary2BCD is
-   generic ( WIDTH : integer := 8   -- 8 bit binary to BCD
-           );
-   port ( binary_in : in  std_logic_vector(WIDTH-1 downto 0);  -- binary input width
-          BCD_out   : out unsigned(9 downto 0);       -- BCD output, 10 bits [2|4|4] to display a 3 digit BCD value when input has length 8
-          clk       : in std_logic;    --changed port
-          reset     : in std_logic     --changed port
-        );
-end binary2BCD;
+ENTITY binary2BCD IS
+    GENERIC (
+        WIDTH : INTEGER := 8 -- 8 bit binary to BCD
+    );
+    PORT (
+        binary_in : IN STD_LOGIC_VECTOR(WIDTH - 1 DOWNTO 0); -- binary input width
+        BCD_out : OUT unsigned(9 DOWNTO 0); -- BCD output, 10 bits [2|4|4] to display a 3 digit BCD value when input has length 8
+        clk : IN STD_LOGIC; --changed port
+        reset : IN STD_LOGIC --changed port
+    );
+END binary2BCD;
 
-architecture structural of binary2BCD is 
-    signal  bcd_register :  unsigned(19 downto 0) :=(others =>'0');
-    signal  counter : integer range 0 to 8 := 0;
-    signal  got_bcd : std_logic  :='0';
-    signal  next_counter : integer range 0 to 8 := 0;
--- SIGNAL DEFINITIONS HERE IF NEEDED
-  
-begin  
-    process(clk,reset)
-    begin
-        if rising_edge (clk) then 
-            
-            if reset = '1' then 
+ARCHITECTURE structural OF binary2BCD IS
+    SIGNAL bcd_register, next_bcd_register : unsigned(19 DOWNTO 0) := (OTHERS => '0');
+    SIGNAL counter : INTEGER RANGE 0 TO 8 := 0;
+BEGIN
+    -- Sequential process
+    PROCESS (clk, reset)
+    BEGIN
+        IF rising_edge(clk) THEN
+            IF reset = '1' THEN
                 counter <= 0;
-                bcd_register <= (others => '0');
-                got_bcd <= '0';
-            else 
-                if counter = 0 then 
-                    bcd_register(7 downto 0) <= unsigned(binary_in);
-                 else
-                 bcd_register <= '0'& bcd_register(17 downto 0);
-                 counter <= next_counter;
-                end if;
-            end if;
-          end if;
-     end process;
-     process(counter)
-     begin 
-        next_counter <= counter +1;
-        if counter = 8 then
-        BCD_out <= bcd_register( 17 downto 8);
-        end if;
-        if bcd_register(19 downto 16) > "0110" then 
-            bcd_register(19 downto 16) <=  bcd_register(19 downto 16) +3;
-        end if;
-        if bcd_register(15 downto 12) > "0110" then 
-            bcd_register(15 downto 12) <=  bcd_register(15 downto 12) +3;
-        end if;
-        if bcd_register(11 downto 8)> "0110" then 
-            bcd_register(11 downto 8)<=  bcd_register(11 downto 8) +3;
-        end if;     
-    end process;             
-               
-    
--- DEVELOPE YOUR CODE HERE
+                bcd_register <= (OTHERS => '0');
+            ELSE
+                IF counter = 0 THEN
+                    bcd_register(7 DOWNTO 0) <= unsigned(binary_in);
+                    counter <= counter + 1;
+                ELSIF counter < 8 THEN
+                    bcd_register <= next_bcd_register;
+                    counter <= counter + 1;
+                END IF;
+            END IF;
+        END IF;
+    END PROCESS;
 
-end structural;
+    -- Combinational process for BCD conversion
+    PROCESS (bcd_register)
+        VARIABLE temp : unsigned(19 DOWNTO 0);
+    BEGIN
+        temp := bcd_register;
+        IF temp(19 DOWNTO 16) > "0100" THEN
+            temp(19 DOWNTO 16) := temp(19 DOWNTO 16) + 3;
+        END IF;
+        IF temp(15 DOWNTO 12) > "0100" THEN
+            temp(15 DOWNTO 12) := temp(15 DOWNTO 12) + 3;
+        END IF;
+        IF temp(11 DOWNTO 8) > "0100" THEN
+            temp(11 DOWNTO 8) := temp(11 DOWNTO 8) + 3;
+        END IF;
+        next_bcd_register <= temp(18 DOWNTO 0) & '0'; -- Shift left
+    END PROCESS;
+
+    -- Output assignment
+    BCD_out <= bcd_register(17 DOWNTO 8) WHEN counter = 8 ELSE
+        (OTHERS => '0');
+
+END structural;

@@ -28,7 +28,7 @@ BEGIN
         VARIABLE temp_result_u : unsigned(8 DOWNTO 0);
         VARIABLE unsigned_a, unsigned_b : unsigned(7 DOWNTO 0);
         VARIABLE signed_a, signed_b : signed(7 DOWNTO 0);
-        VARIABLE mod3_temp : signed(7 DOWNTO 0);
+        VARIABLE mod3_temp : unsigned(7 DOWNTO 0);
     BEGIN
         unsigned_a := unsigned(A);
         unsigned_b := unsigned(B);
@@ -80,8 +80,7 @@ BEGIN
                 IF mod3_temp >= MOD3_3 THEN
                     mod3_temp := mod3_temp - MOD3_3;
                 END IF;
-                result <= STD_LOGIC_VECTOR(mod3_temp(1 DOWNTO 0));
-
+                result <= STD_LOGIC_VECTOR(resize(mod3_temp(1 DOWNTO 0), 8));
             WHEN "1010" => -- Signed (A + B)
                 temp_result := resize(signed_a, 9) + resize(signed_b, 9); -- '0' & ...
                 result <= STD_LOGIC_VECTOR(temp_result(7 DOWNTO 0));
@@ -129,7 +128,7 @@ BEGIN
                     mod3_temp := 3 - mod3_temp;
                 END IF;
 
-                result <= STD_LOGIC_VECTOR(mod3_temp(1 DOWNTO 0));
+                result <= STD_LOGIC_VECTOR(resize(mod3_temp(1 DOWNTO 0), 8));
 
             WHEN OTHERS =>
                 result <= (OTHERS => '0');

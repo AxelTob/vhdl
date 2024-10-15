@@ -1,113 +1,114 @@
-library ieee;
-use ieee.std_logic_1164.all;
+LIBRARY ieee;
+USE ieee.std_logic_1164.ALL;
 
-package ALU_components_pack is
+PACKAGE ALU_components_pack IS
 
    -- Button debouncing 
-   component debouncer   
-   port ( clk        : in  std_logic;
-          reset      : in  std_logic;
-          button_in  : in  std_logic;
-          button_out : out std_logic
-        );
-   end component;
-   
+   COMPONENT debouncer
+      PORT (
+         clk : IN STD_LOGIC;
+         reset : IN STD_LOGIC;
+         button_in : IN STD_LOGIC;
+         button_out : OUT STD_LOGIC
+      );
+   END COMPONENT;
+
    -- D-flipflop
-   component dff
-   generic ( W : integer );
-   port ( clk     : in  std_logic;
-          reset   : in  std_logic;
-          d       : in  std_logic_vector(W-1 downto 0);
-          q       : out std_logic_vector(W-1 downto 0)
-        );
-   end component;
-   
+   COMPONENT dff
+      GENERIC (W : INTEGER);
+      PORT (
+         clk : IN STD_LOGIC;
+         reset : IN STD_LOGIC;
+         d : IN STD_LOGIC_VECTOR(W - 1 DOWNTO 0);
+         q : OUT STD_LOGIC_VECTOR(W - 1 DOWNTO 0)
+      );
+   END COMPONENT;
+
    -- ADD MORE COMPONENTS HERE IF NEEDED 
-   
-end ALU_components_pack;
+
+END ALU_components_pack;
 
 -------------------------------------------------------------------------------
 -- ALU component pack body
 -------------------------------------------------------------------------------
-package body ALU_components_pack is
+PACKAGE BODY ALU_components_pack IS
 
-end ALU_components_pack;
+END ALU_components_pack;
 
 -------------------------------------------------------------------------------
 -- debouncer component: There is no need to use this component, thogh if you get 
 --                      unwanted moving between states of the FSM because of pressing
 --                      push-button this component might be useful.
 -------------------------------------------------------------------------------
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
+LIBRARY ieee;
+USE ieee.std_logic_1164.ALL;
+USE ieee.numeric_std.ALL;
 
-entity debouncer is
-   port ( clk        : in  std_logic;
-          reset      : in  std_logic;
-          button_in  : in  std_logic;
-          button_out : out std_logic
-        );
-end debouncer;
+ENTITY debouncer IS
+   PORT (
+      clk : IN STD_LOGIC;
+      reset : IN STD_LOGIC;
+      button_in : IN STD_LOGIC;
+      button_out : OUT STD_LOGIC
+   );
+END debouncer;
 
-architecture behavioral of debouncer is
+ARCHITECTURE behavioral OF debouncer IS
 
-   signal count      : unsigned(19 downto 0);  -- Range to count 20ms with 50 MHz clock
-   signal button_tmp : std_logic;
-   
-begin
+   SIGNAL count : unsigned(19 DOWNTO 0); -- Range to count 20ms with 50 MHz clock
+   SIGNAL button_tmp : STD_LOGIC;
 
-process ( clk )
-begin
-   if clk'event and clk = '1' then
-      if reset = '1' then
-         count <= (others => '0');
-      else
-         count <= count + 1;
-         button_tmp <= button_in;
-         
-         if (count = 0) then
-            button_out <= button_tmp;
-         end if;
-      end if;
-  end if;
-end process;
+BEGIN
 
-end behavioral;
+   PROCESS (clk)
+   BEGIN
+      IF clk'event AND clk = '1' THEN
+         IF reset = '1' THEN
+            count <= (OTHERS => '0');
+         ELSE
+            count <= count + 1;
+            button_tmp <= button_in;
+
+            IF (count = 0) THEN
+               button_out <= button_tmp;
+            END IF;
+         END IF;
+      END IF;
+   END PROCESS;
+
+END behavioral;
 
 ------------------------------------------------------------------------------
 -- component dff - D-FlipFlop 
 -------------------------------------------------------------------------------
-library ieee;
-use ieee.std_logic_1164.all;
+LIBRARY ieee;
+USE ieee.std_logic_1164.ALL;
 
-entity dff is
-   generic ( W : integer
-           );
-   port ( clk     : in  std_logic;
-          reset   : in  std_logic;
-          d       : in  std_logic_vector(W-1 downto 0);
-          q       : out std_logic_vector(W-1 downto 0)
-        );
-end dff;
+ENTITY dff IS
+   GENERIC (
+      W : INTEGER
+   );
+   PORT (
+      clk : IN STD_LOGIC;
+      reset : IN STD_LOGIC;
+      d : IN STD_LOGIC_VECTOR(W - 1 DOWNTO 0);
+      q : OUT STD_LOGIC_VECTOR(W - 1 DOWNTO 0)
+   );
+END dff;
 
-architecture behavioral of dff is
+ARCHITECTURE behavioral OF dff IS
 
-begin
+BEGIN
 
-   process ( clk )
-   begin
-      if clk'event and clk = '1' then
-         if reset = '1' then
-            q <= (others => '0');
-         else
+   PROCESS (clk)
+   BEGIN
+      IF clk'event AND clk = '1' THEN
+         IF reset = '1' THEN
+            q <= (OTHERS => '0');
+         ELSE
             q <= d;
-         end if;
-      end if;
-   end process;              
+         END IF;
+      END IF;
+   END PROCESS;
 
-end behavioral;
-
-------------------------------------------------------------------------------
--- BEHAVORIAL OF THE ADDED COMPONENETS HERE
--------------------------------------------------------------------------------
+END behavioral;

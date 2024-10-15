@@ -1,98 +1,113 @@
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
+LIBRARY ieee;
+USE ieee.std_logic_1164.ALL;
+USE ieee.numeric_std.ALL;
 
-entity ALU_ctrl is
-   port ( 
-      clk     : in  std_logic;
-      reset   : in  std_logic;
-      enter   : in  std_logic;
-      sign    : in  std_logic;
-      FN      : out std_logic_vector (3 downto 0);   -- ALU functions
-      RegCtrl : out std_logic_vector (1 downto 0)    -- Register update control bits
-   );
-end ALU_ctrl;
+ENTITY ALU_ctrl IS
+    PORT (
+        clk : IN STD_LOGIC;
+        reset : IN STD_LOGIC;
+        enter : IN STD_LOGIC;
+        sign : IN STD_LOGIC;
+        FN : OUT STD_LOGIC_VECTOR (3 DOWNTO 0); -- ALU functions
+        RegCtrl : OUT STD_LOGIC_VECTOR (1 DOWNTO 0) -- Register update control bits
+    );
+END ALU_ctrl;
 
-architecture behavioral of ALU_ctrl is
-    type state_type is (IDLE, INPUT_A, INPUT_B, ADD, SUB, MOD3);
-    signal current_state, next_state : state_type;
-    signal is_signed : std_logic := '0';
-    signal enter_prev, enter_edge : std_logic := '0'; 
-begin
+ARCHITECTURE behavioral OF ALU_ctrl IS
+    TYPE state_type IS (IDLE, INPUT_A, INPUT_B, ADD, SUB, MOD3);
+    SIGNAL current_state, next_state : state_type;
+    SIGNAL is_signed : STD_LOGIC := '0';
+    SIGNAL enter_prev, enter_edge : STD_LOGIC := '0';
+BEGIN
     -- Detect rising edge of enter button
-    process(clk)
-    begin
-        if rising_edge(clk) then
+    PROCESS (clk)
+    BEGIN
+        IF rising_edge(clk) THEN
             enter_prev <= enter;
-            enter_edge <= enter and not enter_prev;
-        end if;
-    end process;
+            enter_edge <= enter AND NOT enter_prev;
+        END IF;
+    END PROCESS;
 
     -- State register and sign mode
-    process(clk, reset)
-    begin
-        if reset = '1' then
+    PROCESS (clk, reset)
+    BEGIN
+        IF reset = '1' THEN
             current_state <= IDLE;
             is_signed <= '0';
-        elsif rising_edge(clk) then
+        ELSIF rising_edge(clk) THEN
             current_state <= next_state;
-            if sign = '1' then
-                is_signed <= not is_signed;
-            end if;
-        end if;
-    end process;
+            IF sign = '1' THEN
+                is_signed <= NOT is_signed;
+            END IF;
+        END IF;
+    END PROCESS;
 
     -- Next state logic
-    process(current_state, enter_edge)
-    begin
-        next_state <= current_state;  -- Default: stay in current state
-        case current_state is
-            when IDLE => -- remove or not. Can cause probs. but easy for reset. 
-                if enter_edge = '1' then next_state <= INPUT_A; end if; -- we want to move to A state on input not just enter
-            when INPUT_A =>
-                if enter_edge = '1' then next_state <= INPUT_B; end if;
-            when INPUT_B =>
-                if enter_edge = '1' then next_state <= ADD; end if;
-            when ADD =>
-                if enter_edge = '1' then next_state <= SUB; end if;
-            when SUB =>
-                if enter_edge = '1' then next_state <= MOD3; end if;
-            when MOD3 =>
-                if enter_edge = '1' then next_state <= ADD; end if;
-        end case;
-    end process;
+    PROCESS (current_state, enter_edge)
+    BEGIN
+        next_state <= current_state; -- Default: stay in current state
+        CASE current_state IS
+            WHEN IDLE => -- remove or not. Can cause probs. but easy for reset. 
+                IF enter_edge = '1' THEN
+                    next_state <= INPUT_A;
+                END IF; -- we want to move to A state on input not just enter
+            WHEN INPUT_A =>
+                IF enter_edge = '1' THEN
+                    next_state <= INPUT_B;
+                END IF;
+            WHEN INPUT_B =>
+                IF enter_edge = '1' THEN
+                    next_state <= ADD;
+                END IF;
+            WHEN ADD =>
+                IF enter_edge = '1' THEN
+                    next_state <= SUB;
+                END IF;
+            WHEN SUB =>
+                IF enter_edge = '1' THEN
+                    next_state <= MOD3;
+                END IF;
+            WHEN MOD3 =>
+                IF enter_edge = '1' THEN
+                    next_state <= ADD;
+                END IF;
+        END CASE;
+    END PROCESS;
 
     -- Output logic
-    process(current_state, is_signed)
-    begin
-        case current_state is
-            when IDLE =>
-                FN <= "0000";  RegCtrl <= "00";
-            when INPUT_A =>
-                FN <= "0000";  RegCtrl <= "01";
-            when INPUT_B =>
-                FN <= "0001";  RegCtrl <= "10";
-            when ADD =>
-                if is_signed = '1' then
-                    FN <= "1010";  -- Signed addition
-                else
-                    FN <= "0010";  -- Unsigned addition
-                end if;
+    PROCESS (current_state, is_signed)
+    BEGIN
+        CASE current_state IS
+            WHEN IDLE =>
+                FN <= "0000";
                 RegCtrl <= "00";
-            when SUB =>
-                if is_signed = '1' then
-                    FN <= "1011";  -- Signed subtraction
-                else
-                    FN <= "0011";  -- Unsigned subtraction
-                end if;
+            WHEN INPUT_A =>
+                FN <= "0000";
+                RegCtrl <= "01";
+            WHEN INPUT_B =>
+                FN <= "0001";
+                RegCtrl <= "10";
+            WHEN ADD =>
+                IF is_signed = '1' THEN
+                    FN <= "1010"; -- Signed addition
+                ELSE
+                    FN <= "0010"; -- Unsigned addition
+                END IF;
                 RegCtrl <= "00";
-            when MOD3 =>
-                if is_signed = '1' then
-                    FN <= "1100";  -- Signed modulo 3
-                else
-                    FN <= "0100";  -- Unsigned modulo 3
-                end if;
+            WHEN SUB =>
+                IF is_signed = '1' THEN
+                    FN <= "1011"; -- Signed subtraction
+                ELSE
+                    FN <= "0011"; -- Unsigned subtraction
+                END IF;
                 RegCtrl <= "00";
-        end case;
-    end process;
-end behavioral;
+            WHEN MOD3 =>
+                IF is_signed = '1' THEN
+                    FN <= "1100"; -- Signed modulo 3
+                ELSE
+                    FN <= "0100"; -- Unsigned modulo 3
+                END IF;
+                RegCtrl <= "00";
+        END CASE;
+    END PROCESS;
+END behavioral;
