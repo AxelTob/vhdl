@@ -95,7 +95,6 @@ BEGIN
                 sign <= temp_result(7);
 
             WHEN "1100" => -- Signed (A) mod 3. 
-                -- should -10 mod 3 yield 2 or -1
                 IF A(7) = '0' THEN -- Positive number
                     mod3_temp := unsigned(A);
                 ELSE -- Negative number

@@ -18,7 +18,8 @@ END binary2BCD;
 
 ARCHITECTURE structural OF binary2BCD IS
     SIGNAL bcd_register, next_bcd_register : unsigned(19 DOWNTO 0) := (OTHERS => '0');
-    SIGNAL counter : INTEGER RANGE 0 TO 8 := 0;
+    SIGNAL counter : INTEGER RANGE 0 TO 10 := 0;
+    --SIGNAL number : STD_LOGIC_VECTOR(7 DOWNTO 0) := (OTHERS => '0');
 BEGIN
     -- Sequential process
     PROCESS (clk, reset)
@@ -31,9 +32,11 @@ BEGIN
                 IF counter = 0 THEN
                     bcd_register(7 DOWNTO 0) <= unsigned(binary_in);
                     counter <= counter + 1;
-                ELSIF counter < 8 THEN
+                ELSIF counter < 9 THEN
                     bcd_register <= next_bcd_register;
                     counter <= counter + 1;
+                ELSIF counter = 9 THEN
+                    counter <= 0;
                 END IF;
             END IF;
         END IF;
@@ -57,7 +60,7 @@ BEGIN
     END PROCESS;
 
     -- Output assignment
-    BCD_out <= bcd_register(17 DOWNTO 8) WHEN counter = 8 ELSE
+    BCD_out <= bcd_register(17 DOWNTO 8) WHEN counter = 9 ELSE
         (OTHERS => '0');
 
 END structural;

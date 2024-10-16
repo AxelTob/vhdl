@@ -19,7 +19,7 @@ ARCHITECTURE behavioral OF seven_seg_driver IS
     SIGNAL bit_counter : STD_LOGIC_VECTOR(3 DOWNTO 0);
     SIGNAL binary_in : STD_LOGIC_VECTOR(3 DOWNTO 0);
     SIGNAL sev_seg : STD_LOGIC_VECTOR(6 DOWNTO 0);
-    SIGNAL clk_counter : INTEGER RANGE 0 TO 99999 := 0;
+    SIGNAL clk_counter : unsigned(13 DOWNTO 0);
     SIGNAL soo : STD_LOGIC_VECTOR(3 DOWNTO 0); --signed or overflow
     SIGNAL display : STD_LOGIC_VECTOR(15 DOWNTO 0); --to control the 4-bit led light
 BEGIN
@@ -92,7 +92,7 @@ BEGIN
         IF rising_edge(clk) THEN
             IF reset = '1' THEN
                 bit_counter <= (OTHERS => '0');
-                clk_counter <= 0;
+                clk_counter <= (OTHERS => '0');
             ELSE
                 bit_counter <= next_bit_counter;
                 DIGIT_ANODE <= bit_counter;

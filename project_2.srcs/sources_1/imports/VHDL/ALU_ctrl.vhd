@@ -36,9 +36,7 @@ BEGIN
             is_signed <= '0';
         ELSIF rising_edge(clk) THEN
             current_state <= next_state;
-            IF sign = '1' THEN
-                is_signed <= NOT is_signed;
-            END IF;
+            is_signed <= sign;
         END IF;
     END PROCESS;
 
