@@ -102,7 +102,7 @@ BEGIN
             IF reset = '1' THEN
                 bit_counter <= "1110";  -- Initialize to a valid starting value
                 clk_counter <= (OTHERS => '0');
-                --display <= (OTHERS => '1');
+                display <= (OTHERS => '1');
                 --sev_seg <= (OTHERS => '1');
             ELSE
                 bit_counter <= next_bit_counter;
