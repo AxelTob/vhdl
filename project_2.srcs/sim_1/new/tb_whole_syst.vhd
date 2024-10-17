@@ -89,6 +89,48 @@ BEGIN
       wait for debounce_time;
       b_Enter <= '0';
       wait for debounce_time;
+      
+      --- now lets reset and try signed ---
+      reset <= '1';
+      WAIT FOR clk_period;
+      reset <= '0';
+    WAIT FOR clk_period;
+    -- A
+    input <= STD_LOGIC_VECTOR(to_signed(-128, 8));
+    b_Enter <= '1';
+      wait for debounce_time;
+      b_Enter <= '0';
+      wait for debounce_time;
+     -- B
+    input <= STD_LOGIC_VECTOR(to_signed(200, 8));
+    b_Enter <= '1';
+      wait for debounce_time;
+      b_Enter <= '0';
+      wait for debounce_time;
+    WAIT FOR clk_period;
+
+      b_Sign <= '1';
+      wait for debounce_time;
+      b_Sign <= '0';
+      wait for debounce_time;
+      
+      -- add,...
+      b_Enter <= '1';
+      wait for debounce_time;
+      b_Enter <= '0';
+      wait for debounce_time;
+
+      -- 5 - 3 = 2
+      b_Enter <= '1';
+      wait for debounce_time;
+      b_Enter <= '0';
+      wait for debounce_time;
+      
+      -- 5 mod 3 = 2
+      b_Enter <= '1';
+      wait for debounce_time;
+      b_Enter <= '0';
+      wait for debounce_time;
 
       wait;
    end process;
