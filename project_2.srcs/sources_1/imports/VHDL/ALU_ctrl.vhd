@@ -16,15 +16,18 @@ END ALU_ctrl;
 ARCHITECTURE behavioral OF ALU_ctrl IS
     TYPE state_type IS (IDLE, INPUT_A, INPUT_B, ADD, SUB, MOD3);
     SIGNAL current_state, next_state : state_type;
-    SIGNAL is_signed : STD_LOGIC := '0';
+    SIGNAL sign_prev, is_signed : STD_LOGIC := '0';
     SIGNAL enter_prev, enter_edge : STD_LOGIC := '0';
+    SIGNAL sign_edge : STD_LOGIC := '0';
 BEGIN
-    -- Detect rising edge of enter button
+     -- Detect rising edge of enter and sign buttons
     PROCESS (clk)
     BEGIN
         IF rising_edge(clk) THEN
             enter_prev <= enter;
             enter_edge <= enter AND NOT enter_prev;
+            sign_prev <= sign;
+            sign_edge <= sign AND NOT sign_prev;
         END IF;
     END PROCESS;
 
@@ -34,10 +37,11 @@ BEGIN
         IF reset = '1' THEN
             current_state <= INPUT_A;
             is_signed <= '0';
-            
         ELSIF rising_edge(clk) THEN
             current_state <= next_state;
-            IF sign = '1' THEN
+            
+            -- Toggle is_signed on rising edge of sign button
+            IF sign_edge = '1' THEN
                 is_signed <= NOT is_signed;
             END IF;
         END IF;
