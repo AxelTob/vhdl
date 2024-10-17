@@ -18,34 +18,43 @@ ARCHITECTURE behavioral OF seven_seg_driver IS
     SIGNAL next_bit_counter : STD_LOGIC_VECTOR(3 DOWNTO 0);
     SIGNAL bit_counter : STD_LOGIC_VECTOR(3 DOWNTO 0);
     SIGNAL binary_in : STD_LOGIC_VECTOR(3 DOWNTO 0);
-    SIGNAL sev_seg : STD_LOGIC_VECTOR(6 DOWNTO 0);
+    SIGNAL sev_seg : STD_LOGIC_VECTOR(6 DOWNTO 0) := (OTHERS => '1');
     SIGNAL clk_counter : unsigned(13 DOWNTO 0);
     SIGNAL soo : STD_LOGIC_VECTOR(3 DOWNTO 0); --signed or overflow
-    SIGNAL display : STD_LOGIC_VECTOR(15 DOWNTO 0); --to control the 4-bit led light
+    SIGNAL display : STD_LOGIC_VECTOR(15 DOWNTO 0) := (OTHERS => '1'); --to control the 4-bit led light
 BEGIN
     PROCESS (clk_counter, bit_counter, display) --change  the showed number slowly
     BEGIN
         -- Default assignment
         -- FIX if needed
-        binary_in <= "1111";
         next_bit_counter <= bit_counter;
         IF clk_counter = 9999 THEN
             CASE bit_counter IS
                 WHEN "1110" =>
-                    binary_in <= display(3 DOWNTO 0);
                     next_bit_counter <= "1101";
                 WHEN "1101" =>
-                    binary_in <= display(7 DOWNTO 4);
                     next_bit_counter <= "1011";
                 WHEN "1011" =>
                     next_bit_counter <= "0111";
-                    binary_in <= display(11 DOWNTO 8);
                 WHEN OTHERS =>
-                    binary_in <= display(15 DOWNTO 12);
                     next_bit_counter <= "1110";
             END CASE;
         END IF;
     END PROCESS;
+    
+    PROCESS(bit_counter, display)
+    begin
+        CASE bit_counter IS
+                WHEN "1110" =>
+                    binary_in <= display(3 DOWNTO 0);
+                WHEN "1101" =>
+                    binary_in <= display(7 DOWNTO 4);
+                WHEN "1011" =>
+                    binary_in <= display(11 DOWNTO 8);
+                WHEN OTHERS =>
+                    binary_in <= display(15 DOWNTO 12);
+            END CASE;
+    END process;
 
     PROCESS (sign, overflow)
     BEGIN
@@ -82,7 +91,7 @@ BEGIN
         ELSIF binary_in = "1010" THEN
             sev_seg <= "0111111";
         ELSIF binary_in = "1011" THEN
-            sev_seg <= "0111000";
+            sev_seg <= "0001110";
         ELSE
             sev_seg <= "1111111";
         END IF;
@@ -93,6 +102,8 @@ BEGIN
             IF reset = '1' THEN
                 bit_counter <= "1110";  -- Initialize to a valid starting value
                 clk_counter <= (OTHERS => '0');
+                --display <= (OTHERS => '1');
+                --sev_seg <= (OTHERS => '1');
             ELSE
                 bit_counter <= next_bit_counter;
                 clk_counter <= clk_counter + 1;

@@ -34,6 +34,7 @@ BEGIN
         IF reset = '1' THEN
             current_state <= INPUT_A;
             is_signed <= '0';
+            
         ELSIF rising_edge(clk) THEN
             current_state <= next_state;
             IF sign = '1' THEN

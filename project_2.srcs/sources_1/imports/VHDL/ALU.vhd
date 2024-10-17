@@ -54,7 +54,7 @@ BEGIN
                     result <= STD_LOGIC_VECTOR(unsigned_a - unsigned_b);
                 ELSE
                     result <= STD_LOGIC_VECTOR(unsigned_b - unsigned_a); -- hm
-                    overflow <= '1';
+                    sign <= '1';
                 END IF;
 
             WHEN "0100" => -- Unsigned (A) mod 3
