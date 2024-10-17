@@ -28,7 +28,7 @@ BEGIN
         -- Default assignment
         -- FIX if needed
         binary_in <= "1111";
-        next_bit_counter <= "1111";
+        next_bit_counter <= bit_counter;
         IF clk_counter = 9999 THEN
             CASE bit_counter IS
                 WHEN "1110" =>
@@ -91,13 +91,16 @@ BEGIN
     BEGIN
         IF rising_edge(clk) THEN
             IF reset = '1' THEN
-                bit_counter <= (OTHERS => '0');
+                bit_counter <= "1110";  -- Initialize to a valid starting value
                 clk_counter <= (OTHERS => '0');
             ELSE
                 bit_counter <= next_bit_counter;
+                clk_counter <= clk_counter + 1;
+                IF clk_counter = 9999 THEN
+                    clk_counter <= (OTHERS => '0');
+                END IF;
                 DIGIT_ANODE <= bit_counter;
                 SEGMENT <= sev_seg;
-                clk_counter <= clk_counter + 1;
                 display <= soo & '0' & '0' & BCD_digit;
             END IF;
         END IF;

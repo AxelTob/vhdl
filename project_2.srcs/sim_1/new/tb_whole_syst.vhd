@@ -6,7 +6,6 @@ ENTITY ALU_top_tb IS
 END ALU_top_tb;
 
 ARCHITECTURE behavior OF ALU_top_tb IS 
-    -- Component Declaration for the Unit Under Test (UUT)
     COMPONENT ALU_top
     PORT(
          clk : IN  std_logic;
@@ -19,22 +18,18 @@ ARCHITECTURE behavior OF ALU_top_tb IS
         );
     END COMPONENT;
     
-   --Inputs
    signal clk : std_logic := '0';
    signal reset : std_logic := '0';
    signal b_Enter : std_logic := '0';
    signal b_Sign : std_logic := '0';
    signal input : std_logic_vector(7 downto 0) := (others => '0');
-
-   --Outputs
    signal seven_seg : std_logic_vector(6 downto 0);
    signal anode : std_logic_vector(3 downto 0);
 
-   -- Clock period definitions
-   constant clk_period : time := 10 ns;
+   constant clk_period : time := 20 ns;  -- 50 MHz clock
+   constant debounce_time : time := 21 ms;  -- Slightly more than the debouncer delay
 
 BEGIN
-    -- Instantiate the Unit Under Test (UUT)
    uut: ALU_top PORT MAP (
           clk => clk,
           reset => reset,
@@ -45,7 +40,6 @@ BEGIN
           anode => anode
         );
 
-   -- Clock process definitions
    clk_process :process
    begin
         clk <= '0';
@@ -54,51 +48,49 @@ BEGIN
         wait for clk_period/2;
    end process;
 
-   -- Stimulus process
    stim_proc: process
-begin        
-   -- Hold reset state for 100 ns.
-   reset <= '1';
-   wait for 100 ns;    
-   reset <= '0';
-   wait for clk_period*10;
+   begin        
+      reset <= '1';
+      wait for 100 ns;    
+      reset <= '0';
+      wait for debounce_time;
 
-   -- Test Case 1: Unsigned Addition (5 + 3)
-   -- Input A
-   input <= "00000101";  -- 5 in binary
-   wait for clk_period*5;
-   b_Enter <= '1';
-   wait for clk_period*2;
-   b_Enter <= '0';
-   wait for clk_period*10;  -- Wait longer between inputs
+      -- Test Case 1: Unsigned Addition (5 + 3)
+      -- Input A
+      input <= "00000101";  -- 5 in binary
+      wait for clk_period*10;
+      b_Enter <= '1';
+      wait for debounce_time;
+      b_Enter <= '0';
+      wait for debounce_time;
 
-   -- Input B
-   input <= "00000011";  -- 3 in binary
-   wait for clk_period*5;
-   b_Enter <= '1';
-   wait for clk_period*2;
-   b_Enter <= '0';
-   wait for clk_period*10;  -- Wait longer to see the result
+      -- Input B
+      input <= "00000011";  -- 3 in binary
+      wait for clk_period*10;
+      b_Enter <= '1';
+      wait for debounce_time;
+      b_Enter <= '0';
+      wait for debounce_time;
 
-   -- Trigger addition (should show 8)
-   b_Enter <= '1';
-   wait for clk_period*2;
-   b_Enter <= '0';
-   wait for clk_period*20;  -- Wait to see the result
+      -- Trigger addition (should show 8)
+      b_Enter <= '1';
+      wait for debounce_time;
+      b_Enter <= '0';
+      wait for debounce_time;
 
-   -- 5 - 3 = 2
-   b_Enter <= '1';
-   wait for clk_period*2;
-   b_Enter <= '0';
-   wait for clk_period*20;  -- Wait to see the result
-   
-   -- 5 mod 3 = 2
-   b_Enter <= '1';
-   wait for clk_period*2;
-   b_Enter <= '0';
-   wait for clk_period*20;  -- Wait to see the result
+      -- 5 - 3 = 2
+      b_Enter <= '1';
+      wait for debounce_time;
+      b_Enter <= '0';
+      wait for debounce_time;
+      
+      -- 5 mod 3 = 2
+      b_Enter <= '1';
+      wait for debounce_time;
+      b_Enter <= '0';
+      wait for debounce_time;
 
-   wait;
-end process;
+      wait;
+   end process;
 
 END;

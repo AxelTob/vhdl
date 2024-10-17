@@ -80,7 +80,7 @@ BEGIN
                 IF mod3_temp >= MOD3_3 THEN
                     mod3_temp := mod3_temp - MOD3_3;
                 END IF;
-                result <= STD_LOGIC_VECTOR(resize(mod3_temp(1 DOWNTO 0), 8));
+                result <= STD_LOGIC_VECTOR("000000" & mod3_temp(1 DOWNTO 0));
             WHEN "1010" => -- Signed (A + B)
                 temp_result := resize(signed_a, 9) + resize(signed_b, 9); -- '0' & ...
                 result <= STD_LOGIC_VECTOR(temp_result(7 DOWNTO 0));
@@ -127,7 +127,7 @@ BEGIN
                     mod3_temp := 3 - mod3_temp;
                 END IF;
 
-                result <= STD_LOGIC_VECTOR(resize(mod3_temp(1 DOWNTO 0), 8));
+                result <= STD_LOGIC_VECTOR("000000" & mod3_temp(1 DOWNTO 0));
 
             WHEN OTHERS =>
                 result <= (OTHERS => '0');

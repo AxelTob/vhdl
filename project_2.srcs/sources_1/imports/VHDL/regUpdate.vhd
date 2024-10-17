@@ -1,47 +1,37 @@
-LIBRARY ieee;
-USE ieee.std_logic_1164.ALL;
-USE ieee.numeric_std.ALL;
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
-ENTITY regUpdate IS
-    PORT (
-        clk : IN STD_LOGIC;
-        reset : IN STD_LOGIC;
-        RegCtrl : IN STD_LOGIC_VECTOR (1 DOWNTO 0);
-        input : IN STD_LOGIC_VECTOR (7 DOWNTO 0);
-        A : OUT STD_LOGIC_VECTOR (7 DOWNTO 0);
-        B : OUT STD_LOGIC_VECTOR (7 DOWNTO 0)
-    );
-END regUpdate;
+entity regUpdate is
+   port ( clk        : in  std_logic;
+          reset      : in  std_logic;
+          RegCtrl    : in  std_logic_vector (1 downto 0);   -- Register update control from ALU controller
+          input      : in  std_logic_vector (7 downto 0);   -- Switch inputs
+          A          : out std_logic_vector (7 downto 0);   -- Input A
+          B          : out std_logic_vector (7 downto 0)  -- Input B
+        );
+end regUpdate;
 
 ARCHITECTURE behavioral OF regUpdate IS
-    SIGNAL next_A, next_B : STD_LOGIC_VECTOR(7 DOWNTO 0);
+    SIGNAL reg_A, reg_B : std_logic_vector(7 downto 0);
 BEGIN
-    -- Combinational part
-    PROCESS (RegCtrl, input)
-    BEGIN
-        next_A <= (OTHERS => '0');
-        next_B <= (OTHERS => '0');
-
-        CASE RegCtrl IS
-            WHEN "01" => -- Update A
-                next_A <= input;
-            WHEN "10" => -- Update B
-                next_B <= input;
-            WHEN OTHERS =>
-                -- nothing?
-        END CASE;
-    END PROCESS;
-
-    -- Sequential part
-    PROCESS (clk, reset)
+    PROCESS(clk, reset)
     BEGIN
         IF reset = '1' THEN
-            A <= (OTHERS => '0');
-            B <= (OTHERS => '0');
+            reg_A <= (OTHERS => '0');
+            reg_B <= (OTHERS => '0');
         ELSIF rising_edge(clk) THEN
-            A <= next_A;
-            B <= next_B;
+            CASE RegCtrl IS
+                WHEN "01" =>
+                    reg_A <= input;
+                WHEN "10" =>
+                    reg_B <= input;
+                WHEN OTHERS =>
+                    NULL;
+            END CASE;
         END IF;
     END PROCESS;
 
+    A <= reg_A;
+    B <= reg_B;
 END behavioral;

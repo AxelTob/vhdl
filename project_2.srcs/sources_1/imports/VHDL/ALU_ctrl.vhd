@@ -32,11 +32,13 @@ BEGIN
     PROCESS (clk, reset)
     BEGIN
         IF reset = '1' THEN
-            current_state <= IDLE;
+            current_state <= INPUT_A;
             is_signed <= '0';
         ELSIF rising_edge(clk) THEN
             current_state <= next_state;
-            is_signed <= sign;
+            IF sign = '1' THEN
+                is_signed <= NOT is_signed;
+            END IF;
         END IF;
     END PROCESS;
 
@@ -46,9 +48,7 @@ BEGIN
         next_state <= current_state; -- Default: stay in current state
         CASE current_state IS
             WHEN IDLE => -- remove or not. Can cause probs. but easy for reset. 
-                IF enter_edge = '1' THEN
-                    next_state <= INPUT_A;
-                END IF; -- we want to move to A state on input not just enter
+                next_state <= INPUT_A;
             WHEN INPUT_A =>
                 IF enter_edge = '1' THEN
                     next_state <= INPUT_B;
