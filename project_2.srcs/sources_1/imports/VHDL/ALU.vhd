@@ -53,8 +53,8 @@ BEGIN
                 IF unsigned_a >= unsigned_b THEN
                     result <= STD_LOGIC_VECTOR(unsigned_a - unsigned_b);
                 ELSE
-                    result <= STD_LOGIC_VECTOR(unsigned_b - unsigned_a); -- hm
-                    sign <= '1';
+                    result <= STD_LOGIC_VECTOR(to_unsigned(256, 8) - (unsigned_b - unsigned_a)); -- hm
+                    overflow <= '1';
                 END IF;
 
             WHEN "0100" => -- Unsigned (A) mod 3
@@ -87,12 +87,20 @@ BEGIN
                 --inputs have same sign, input and result sign differ
                 overflow <= (signed_a(7) XNOR signed_b(7)) AND (signed_a(7) XOR temp_result(7));
                 sign <= temp_result(7);
+                
 
             WHEN "1011" => -- Signed (A - B)
-                temp_result := resize(signed_a, 9) - resize(signed_b, 9);
-                result <= STD_LOGIC_VECTOR(temp_result(7 DOWNTO 0));
-                overflow <= (signed_a(7) XOR signed_b(7)) AND (signed_a(7) XOR temp_result(7));
-                sign <= temp_result(7);
+               -- temp_result := resize(signed_a, 9) - resize(signed_b, 9);
+                --result <= STD_LOGIC_VECTOR(temp_result(7 DOWNTO 0));
+                -- if A and B have same sign (ex. -). and result and sign(of either a,b) is same.
+                --overflow <= (signed_a(7) XOR signed_b(7)) AND (signed_a(7) XOR temp_result(7));
+                --sign <= temp_result(7);
+                IF signed_a >= signed_b THEN
+                    result <= STD_LOGIC_VECTOR(signed_a - signed_b);
+                ELSE
+                    result <= STD_LOGIC_VECTOR(signed_b - signed_a); -- hm
+                    sign <= '1';
+                END IF;
 
             WHEN "1100" => -- Signed (A) mod 3. 
                 IF A(7) = '0' THEN -- Positive number

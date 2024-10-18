@@ -58,10 +58,10 @@ BEGIN
 
     PROCESS (sign, overflow)
     BEGIN
-        IF sign = '1'THEN
-            soo <= "1010"; -- signed caculation
-        ELSIF overflow = '1'THEN
+        IF overflow = '1'THEN
             soo <= "1011"; -- overflow
+        ELSIF sign = '1'THEN
+            soo <= "1010"; -- signed caculation
         ELSE
             soo <= "1111";
         END IF;

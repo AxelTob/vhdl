@@ -85,13 +85,15 @@ ARCHITECTURE structural OF ALU_top IS
    SIGNAL RegCtrl : STD_LOGIC_VECTOR(1 DOWNTO 0);
    SIGNAL overflow, sign_out : STD_LOGIC;
    SIGNAL BCD_out : STD_LOGIC_VECTOR(9 DOWNTO 0);
+   SIGNAL reset_n : STD_LOGIC;
 
 BEGIN
+   reset_n <= not reset;
    -- Debouncer for Enter button
    debouncer1 : debouncer
    PORT MAP(
       clk => clk,
-      reset => reset,
+      reset => reset_n,
       button_in => b_Enter,
       button_out => Enter
    );
@@ -100,7 +102,7 @@ BEGIN
    debouncer2 : debouncer
    PORT MAP(
       clk => clk,
-      reset => reset,
+      reset => reset_n,
       button_in => b_Sign,
       button_out => Sign
    );
@@ -109,7 +111,7 @@ BEGIN
    alu_controller : ALU_ctrl
    PORT MAP(
       clk => clk,
-      reset => reset,
+      reset => reset_n,
       enter => Enter,
       sign => Sign,
       FN => FN,
@@ -120,7 +122,7 @@ BEGIN
    reg_update : regUpdate
    PORT MAP(
       clk => clk,
-      reset => reset,
+      reset => reset_n,
       RegCtrl => RegCtrl,
       input => input,
       A => A,
@@ -144,14 +146,14 @@ BEGIN
       binary_in => ALU_result,
       BCD_out => BCD_out,
       clk => clk,
-      reset => reset
+      reset => reset_n
    );
 
    -- 7-Segment Display Driver
    seg7_driver : seven_seg_driver
    PORT MAP(
       clk => clk,
-      reset => reset,
+      reset => reset_n,
       BCD_digit => BCD_out,
       sign => sign_out,
       overflow => overflow,
