@@ -13,17 +13,6 @@ PACKAGE ALU_components_pack IS
       );
    END COMPONENT;
 
-   -- D-flipflop
-   COMPONENT dff
-      GENERIC (W : INTEGER);
-      PORT (
-         clk : IN STD_LOGIC;
-         reset : IN STD_LOGIC;
-         d : IN STD_LOGIC_VECTOR(W - 1 DOWNTO 0);
-         q : OUT STD_LOGIC_VECTOR(W - 1 DOWNTO 0)
-      );
-   END COMPONENT;
-
    -- ADD MORE COMPONENTS HERE IF NEEDED 
 
 END ALU_components_pack;
@@ -63,7 +52,7 @@ BEGIN
    PROCESS (clk)
    BEGIN
       IF clk'event AND clk = '1' THEN
-         IF reset = '1' THEN
+         IF reset = '0' THEN
             count <= (OTHERS => '0');
          ELSE
             count <= count + 1;
@@ -78,37 +67,3 @@ BEGIN
 
 END behavioral;
 
-------------------------------------------------------------------------------
--- component dff - D-FlipFlop 
--------------------------------------------------------------------------------
-LIBRARY ieee;
-USE ieee.std_logic_1164.ALL;
-
-ENTITY dff IS
-   GENERIC (
-      W : INTEGER
-   );
-   PORT (
-      clk : IN STD_LOGIC;
-      reset : IN STD_LOGIC;
-      d : IN STD_LOGIC_VECTOR(W - 1 DOWNTO 0);
-      q : OUT STD_LOGIC_VECTOR(W - 1 DOWNTO 0)
-   );
-END dff;
-
-ARCHITECTURE behavioral OF dff IS
-
-BEGIN
-
-   PROCESS (clk)
-   BEGIN
-      IF clk'event AND clk = '1' THEN
-         IF reset = '1' THEN
-            q <= (OTHERS => '0');
-         ELSE
-            q <= d;
-         END IF;
-      END IF;
-   END PROCESS;
-
-END behavioral;

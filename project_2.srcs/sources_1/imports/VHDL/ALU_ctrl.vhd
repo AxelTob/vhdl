@@ -34,7 +34,7 @@ BEGIN
     -- State register and sign mode
     PROCESS (clk, reset)
     BEGIN
-        IF reset = '1' THEN
+        IF reset = '0' THEN
             current_state <= INPUT_A;
             is_signed <= '0';
         ELSIF rising_edge(clk) THEN

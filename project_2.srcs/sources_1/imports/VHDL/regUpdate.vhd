@@ -17,7 +17,7 @@ ARCHITECTURE behavioral OF regUpdate IS
 BEGIN
     PROCESS(clk, reset)
     BEGIN
-        IF reset = '1' THEN
+        IF reset = '0' THEN
             reg_A <= (OTHERS => '0');
             reg_B <= (OTHERS => '0');
         ELSIF rising_edge(clk) THEN

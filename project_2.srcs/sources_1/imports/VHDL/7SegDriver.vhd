@@ -42,7 +42,7 @@ BEGIN
         END IF;
     END PROCESS;
     
-    PROCESS(bit_counter, display)
+    PROCESS(bit_counter,display)
     begin
         CASE bit_counter IS
                 WHEN "1110" =>
@@ -99,7 +99,7 @@ BEGIN
     PROCESS (clk)
     BEGIN
         IF rising_edge(clk) THEN
-            IF reset = '1' THEN
+            IF reset = '0' THEN
                 bit_counter <= "1110";  -- Initialize to a valid starting value
                 clk_counter <= (OTHERS => '0');
                 display <= (OTHERS => '1');

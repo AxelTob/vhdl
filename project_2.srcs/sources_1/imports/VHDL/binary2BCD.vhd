@@ -27,7 +27,7 @@ BEGIN
     PROCESS (clk)
     BEGIN
         IF rising_edge(clk) THEN
-            IF reset = '1' THEN
+            IF reset = '0' THEN
                 counter <= 0;
                 bcd_register <= (OTHERS => '0');
                 bcd_result <= (OTHERS => '0');
