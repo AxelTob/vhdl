@@ -17,42 +17,60 @@ ENTITY binary2BCD IS
 END binary2BCD;
 
 ARCHITECTURE structural OF binary2BCD IS
-    SIGNAL bcd_register, next_bcd_register : unsigned(19 DOWNTO 0) := (OTHERS => '0');
-    SIGNAL counter : INTEGER RANGE 0 TO 8 := 0;
-    SIGNAL bcd_result : STD_LOGIC_VECTOR(9 DOWNTO 0) := (OTHERS => '0');
-    SIGNAL prev_binary_in : STD_LOGIC_VECTOR(WIDTH - 1 DOWNTO 0) := (OTHERS => '0');
-    SIGNAL conversion_active : BOOLEAN := FALSE;
+    SIGNAL bcd_register, next_bcd_register, next_bcd_reg : unsigned(19 DOWNTO 0) := (OTHERS => '0');
+    SIGNAL counter, next_counter_value : INTEGER RANGE 0 TO 8 := 0;
+    SIGNAL bcd_result, next_bcd_result : STD_LOGIC_VECTOR(9 DOWNTO 0) := (OTHERS => '0');
+    SIGNAL prev_binary_in, next_prev_binary : STD_LOGIC_VECTOR(WIDTH - 1 DOWNTO 0) := (OTHERS => '0');
+    SIGNAL conversion_active, next_conversion_active: BOOLEAN := FALSE;
 BEGIN
-    -- Sequential process
+    -- Combinational Process
+    PROCESS(binary_in, prev_binary_in, conversion_active, counter, bcd_register, next_bcd_register, bcd_result)
+    BEGIN
+        -- Default assignments (current values)
+        next_counter_value <= counter;
+        next_bcd_reg <= bcd_register;
+        next_conversion_active <= conversion_active;
+        next_prev_binary <= prev_binary_in;
+        next_bcd_result <= bcd_result;
+    
+        IF NOT conversion_active AND binary_in /= prev_binary_in THEN
+            next_bcd_reg <= (OTHERS => '0');
+            next_bcd_reg(7 DOWNTO 0) <= unsigned(binary_in);
+            next_prev_binary <= binary_in;
+            next_counter_value <= 0;
+            next_conversion_active <= TRUE;
+        ELSIF conversion_active THEN
+            IF counter < 8 THEN
+                next_bcd_reg <= next_bcd_register;
+                next_counter_value <= counter + 1;
+            ELSE
+                next_bcd_result <= STD_LOGIC_VECTOR(bcd_register(17 DOWNTO 8));
+                next_conversion_active <= FALSE;
+            END IF;
+        END IF;
+    END PROCESS;
+    
+    -- Sequential Process
     PROCESS (clk)
     BEGIN
         IF rising_edge(clk) THEN
             IF reset = '0' THEN
+                -- Reset values
                 counter <= 0;
                 bcd_register <= (OTHERS => '0');
                 bcd_result <= (OTHERS => '0');
                 prev_binary_in <= (OTHERS => '0');
                 conversion_active <= FALSE;
             ELSE
-                IF NOT conversion_active AND binary_in /= prev_binary_in THEN
-                    bcd_register <= (OTHERS => '0');
-                    bcd_register(7 DOWNTO 0) <= unsigned(binary_in);
-                    prev_binary_in <= binary_in;
-                    counter <= 0;
-                    conversion_active <= TRUE;
-                ELSIF conversion_active THEN
-                    IF counter < 8 THEN
-                        bcd_register <= next_bcd_register;
-                        counter <= counter + 1;
-                    ELSE
-                        bcd_result <= STD_LOGIC_VECTOR(bcd_register(17 DOWNTO 8));
-                        conversion_active <= FALSE;
-                    END IF;
-                END IF;
+                -- Register updates
+                counter <= next_counter_value;
+                bcd_register <= next_bcd_reg;
+                bcd_result <= next_bcd_result;
+                prev_binary_in <= next_prev_binary;
+                conversion_active <= next_conversion_active;
             END IF;
         END IF;
     END PROCESS;
-
     -- Combinational process for BCD conversion
     PROCESS (bcd_register)
         VARIABLE temp : unsigned(19 DOWNTO 0);

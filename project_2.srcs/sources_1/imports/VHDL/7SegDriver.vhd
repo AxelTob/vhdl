@@ -107,9 +107,6 @@ BEGIN
             ELSE
                 bit_counter <= next_bit_counter;
                 clk_counter <= clk_counter + 1;
-                IF clk_counter = 9999 THEN
-                    clk_counter <= (OTHERS => '0');
-                END IF;
                 DIGIT_ANODE <= bit_counter;
                 SEGMENT <= sev_seg;
                 display <= soo & '0' & '0' & BCD_digit;

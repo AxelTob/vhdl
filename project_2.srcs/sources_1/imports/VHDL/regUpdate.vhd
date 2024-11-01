@@ -13,25 +13,36 @@ entity regUpdate is
 end regUpdate;
 
 ARCHITECTURE behavioral OF regUpdate IS
-    SIGNAL reg_A, reg_B : std_logic_vector(7 downto 0);
+    SIGNAL reg_A, reg_B, next_A, next_B : std_logic_vector(7 downto 0);
 BEGIN
+-- comb
+    PROCESS(RegCtrl, input)
+    BEGIN
+        -- Default assignment
+        next_A <= reg_A;
+        next_B <= reg_B;
+        
+        CASE RegCtrl IS
+            WHEN "01" =>
+                next_A <= input;
+            WHEN "10" =>
+                next_B <= input;
+            WHEN OTHERS =>
+                --
+        END CASE; 
+    END PROCESS;
+    
     PROCESS(clk, reset)
     BEGIN
         IF reset = '0' THEN
             reg_A <= (OTHERS => '0');
             reg_B <= (OTHERS => '0');
         ELSIF rising_edge(clk) THEN
-            CASE RegCtrl IS
-                WHEN "01" =>
-                    reg_A <= input;
-                WHEN "10" =>
-                    reg_B <= input;
-                WHEN OTHERS =>
-                    NULL;
-            END CASE;
+            reg_A <= next_A;
+            reg_B <= next_B;
         END IF;
     END PROCESS;
-
+    
     A <= reg_A;
     B <= reg_B;
 END behavioral;

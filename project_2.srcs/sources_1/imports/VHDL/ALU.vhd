@@ -1,151 +1,190 @@
-LIBRARY ieee;
-USE ieee.std_logic_1164.ALL;
-USE ieee.numeric_std.ALL;
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 -- mod reflection. Pretty dry. Can maybe make prettier.
 
-ENTITY ALU IS
-    PORT (
-        A : IN STD_LOGIC_VECTOR (7 DOWNTO 0);
-        B : IN STD_LOGIC_VECTOR (7 DOWNTO 0);
-        FN : IN STD_LOGIC_VECTOR (3 DOWNTO 0);
-        result : OUT STD_LOGIC_VECTOR (7 DOWNTO 0);
-        overflow : OUT STD_LOGIC;
-        sign : OUT STD_LOGIC
+entity ALU is
+    port (
+        A : in std_logic_vector (7 downto 0);
+        B : in std_logic_vector (7 downto 0);
+        FN : in std_logic_vector (3 downto 0);
+        result : out std_logic_vector (7 downto 0);
+        overflow : out std_logic;
+        sign : out std_logic
     );
-END ALU;
+end ALU;
 
-ARCHITECTURE behavioral OF ALU IS
-    CONSTANT MOD3_192 : unsigned(7 DOWNTO 0) := to_unsigned(192, 8);
-    CONSTANT MOD3_96  : unsigned(7 DOWNTO 0) := to_unsigned(96, 8);
-    CONSTANT MOD3_48  : unsigned(7 DOWNTO 0) := to_unsigned(48, 8);
-    CONSTANT MOD3_24  : unsigned(7 DOWNTO 0) := to_unsigned(24, 8);
-    CONSTANT MOD3_12  : unsigned(7 DOWNTO 0) := to_unsigned(12, 8);
-    CONSTANT MOD3_6   : unsigned(7 DOWNTO 0) := to_unsigned(6, 8);
-    CONSTANT MOD3_3   : unsigned(7 DOWNTO 0) := to_unsigned(3, 8);
+architecture behavioral of ALU is
+    signal mod_out : std_logic_vector (7 downto 0);
 
-BEGIN
-    PROCESS (A, B, FN)
-        VARIABLE mod3_temp     : unsigned(7 DOWNTO 0);
-        VARIABLE temp_result   : unsigned(8 DOWNTO 0);
-        VARIABLE temp_result_u : unsigned(8 DOWNTO 0);
-        VARIABLE unsigned_a, unsigned_b : unsigned(7 DOWNTO 0);
+    signal mod_comp_Ato1 : unsigned (7 downto 0);
+    signal mod_comp_1to2 : unsigned (7 downto 0);
+    signal mod_comp_2to3 : unsigned (7 downto 0);
+    signal mod_comp_3to4 : unsigned (7 downto 0);
+    signal mod_comp_4to5 : unsigned (7 downto 0);
+    signal mod_comp_5to6 : unsigned (7 downto 0);
+    signal mod_comp_6to7 : unsigned (7 downto 0);
+    signal mod_comp_7toOut : unsigned (7 downto 0);
 
-    BEGIN
-        unsigned_a := unsigned(A);
-        unsigned_b := unsigned(B);
+    signal add_out : unsigned (8 downto 0);
+    signal sub_out : unsigned (8 downto 0);
+
+    signal temp_add : unsigned (8 downto 0);
+    signal temp_sub : unsigned (8 downto 0);
+
+    signal sub_unsigned_a, sub_unsigned_b, add_unsigned_a, add_unsigned_b, unsigned_a, unsigned_b : unsigned(7 downto 0);
+
+
+
+begin
+    add_unsigned_a <= unsigned(A);
+    add_unsigned_b <= unsigned(B);
+    unsigned_a <= unsigned(A);
+    unsigned_b <= unsigned(B);
+    sub_unsigned_a <= unsigned(A);
+    sub_unsigned_b <= unsigned(not B) + 1;
+    
+    process (A, B, FN, mod_out, sub_out, add_out, unsigned_a, unsigned_b)
+-- 3 + 1 => 2. 1 +3 => 6
+    begin
         overflow <= '0';
         sign <= '0';
-        CASE FN IS
-            WHEN "0000" => -- Input A
+        case FN is
+            when "0000" => -- Input A
                 result <= A;
 
-            WHEN "0001" => -- Input B
+            when "0001" => -- Input B
                 result <= B;
 
-            WHEN "0010" => -- Unsigned (A + B)
-                temp_result_u := resize(unsigned_a, 9) + resize(unsigned_b, 9);
-                result <= STD_LOGIC_VECTOR(temp_result_u(7 DOWNTO 0));
-                overflow <= temp_result_u(8);
+            when "0010" => -- Unsigned (A + B)
+                result <= std_logic_vector(add_out(7 downto 0));
+                overflow <= add_out(8);
 
-            WHEN "0011" => -- Unsigned (A - B)
-                unsigned_b := unsigned(not B)+1;
-                temp_result_u := resize(unsigned_a, 9) + resize(unsigned_b, 9);
-                result <= STD_LOGIC_VECTOR(temp_result_u(7 DOWNTO 0));
-                overflow <= not temp_result_u(8);
+            when "0011" => -- Unsigned (A - B)
+                result <= std_logic_vector(sub_out(7 downto 0));
+                overflow <= not sub_out(8);
 
-            WHEN "0100" => -- Unsigned (A) mod 3
-                mod3_temp := unsigned(A);
-                IF mod3_temp >= MOD3_192 THEN
-                    mod3_temp := mod3_temp - MOD3_192;
-                END IF;
-                IF mod3_temp >= MOD3_96 THEN
-                    mod3_temp := mod3_temp - MOD3_96;
-                END IF;
-                IF mod3_temp >= MOD3_48 THEN
-                    mod3_temp := mod3_temp - MOD3_48;
-                END IF;
-                IF mod3_temp >= MOD3_24 THEN
-                    mod3_temp := mod3_temp - MOD3_24;
-                END IF;
-                IF mod3_temp >= MOD3_12 THEN
-                    mod3_temp := mod3_temp - MOD3_12;
-                END IF;
-                IF mod3_temp >= MOD3_6 THEN
-                    mod3_temp := mod3_temp - MOD3_6;
-                END IF;
-                IF mod3_temp >= MOD3_3 THEN
-                    mod3_temp := mod3_temp - MOD3_3;
-                END IF;
-                result <= STD_LOGIC_VECTOR("000000" & mod3_temp(1 DOWNTO 0));
-            WHEN "1010" => -- Signed (A + B)
-                temp_result := resize(unsigned_a, 9) + resize(unsigned_b, 9); -- '0' & ...
-                if temp_result(7) = '1' then 
-                    result <= STD_LOGIC_VECTOR(not temp_result(7 DOWNTO 0)+ 1);
-                else result <= STD_LOGIC_VECTOR(temp_result(7 DOWNTO 0));
+            when "0100" => -- Unsigned (A) mod 3
+                result <= mod_out;
+            when "1010" => -- Signed (A + B)
+                if add_out(7) = '1' then
+                    result <= std_logic_vector(not add_out(7 downto 0) + 1);
+                else
+                    result <= std_logic_vector(add_out(7 downto 0));
                 end if;
                 --inputs have same sign, input and result sign differ
-                if(unsigned_a(7) = unsigned_b(7) AND unsigned_a(7) /= temp_result(7)) then 
+                if (unsigned_a(7) = unsigned_b(7) and unsigned_a(7) /= add_out(7)) then
                     overflow <= '1';
-                   else 
+                else
                     overflow <= '0';
-                 end if;
-                sign <= temp_result(7);
-                
-
-            WHEN "1011" => -- Signed (A - B)               
-                unsigned_b := unsigned(not B)+1;
-                temp_result := resize(unsigned_a, 9) + resize(unsigned_b, 9);
-                
-                if temp_result(7) = '1' then 
-                    result <= STD_LOGIC_VECTOR(not temp_result(7 DOWNTO 0)+ 1);
-                else result <= STD_LOGIC_VECTOR(temp_result(7 DOWNTO 0));
                 end if;
-                if B = "10000000" then
+                sign <= add_out(7);
+
+            when "1011" => -- Signed (A - B)               
+                if sub_out(7) = '1' then
+                    result <= std_logic_vector(not sub_out(7 downto 0) + 1);
+                else
+                    result <= std_logic_vector(sub_out(7 downto 0));
+                end if;
+                if (unsigned_a(7) /= B(7) and unsigned_a(7) /= sub_out(7)) then
                     overflow <= '1';
-                elsif(unsigned_a(7) /= B(7) AND unsigned_a(7) /= temp_result(7)) then 
-                    overflow <= '1';
-                   else 
+                else
                     overflow <= '0';
-                 end if;
-                sign <= temp_result(7);
+                end if;
+                sign <= sub_out(7);
 
-            WHEN "1100" => -- Signed (A) mod 3. 
-                IF A(7) = '0' THEN -- Positive number
-                    mod3_temp := unsigned(A);
-                ELSE -- Negative number
-                    mod3_temp := unsigned(NOT A) + 1; -- Two's complement
-                END IF;
+            when "1100" => -- Signed (A) mod 3. 
+                result <= mod_out;
 
-                IF mod3_temp >= MOD3_192 THEN
-                    mod3_temp := mod3_temp - MOD3_192;
-                END IF;
-                IF mod3_temp >= MOD3_96 THEN
-                    mod3_temp := mod3_temp - MOD3_96;
-                END IF;
-                IF mod3_temp >= MOD3_48 THEN
-                    mod3_temp := mod3_temp - MOD3_48;
-                END IF;
-                IF mod3_temp >= MOD3_24 THEN
-                    mod3_temp := mod3_temp - MOD3_24;
-                END IF;
-                IF mod3_temp >= MOD3_12 THEN
-                    mod3_temp := mod3_temp - MOD3_12;
-                END IF;
-                IF mod3_temp >= MOD3_6 THEN
-                    mod3_temp := mod3_temp - MOD3_6;
-                END IF;
-                IF mod3_temp >= MOD3_3 THEN
-                    mod3_temp := mod3_temp - MOD3_3;
-                END IF;
-
-                IF A(7) = '1' AND mod3_temp /= 0 THEN -- Adjust for negative numbers
-                    mod3_temp := 3 - mod3_temp;
-                    
-                END IF;
-                result <= STD_LOGIC_VECTOR("000000" & mod3_temp(1 DOWNTO 0));
-
-            WHEN OTHERS =>
-                result <= (OTHERS => '0');
-        END CASE;
+            when others =>
+                result <= (others => '0');
+        end case;
+    end process;
+    -- ADD
+    PROCESS (FN, add_unsigned_a, add_unsigned_b, temp_add)
+    begin
+        temp_add <= resize(add_unsigned_a, 9) + resize(add_unsigned_b, 9);
+        
+        IF FN(1) /= '1' then
+            add_out <= (others => '0');
+        else
+            add_out <= temp_add;
+        end if;
     END PROCESS;
-END behavioral;
+
+    -- SUB process
+    PROCESS (FN, sub_unsigned_a, sub_unsigned_b, temp_sub)
+    begin
+        temp_sub <= resize(sub_unsigned_a, 9) + resize(sub_unsigned_b, 9);
+        
+        IF FN(0) /= '1' then
+            sub_out <= (others => '0');
+        else
+            sub_out <= temp_sub;
+        end if;
+    END PROCESS;
+    -- MOD
+    process (FN, A, mod_out, mod_comp_Ato1, mod_comp_1to2, mod_comp_2to3, mod_comp_3to4, mod_comp_4to5, mod_comp_5to6, mod_comp_6to7, mod_comp_7toOut)
+    begin
+        if FN(2) /= '1' then
+            mod_out <= (others => '0');
+        end if;
+
+        if A(7) = '1' and FN(3) = '1' then
+            mod_comp_Ato1 <= unsigned(not A) + 1;
+        else
+            mod_comp_Ato1 <= unsigned(A);
+        end if;
+
+        if mod_comp_Ato1 >= 192 then
+            mod_comp_1to2 <= mod_comp_Ato1 - 192;
+        else
+            mod_comp_1to2 <= mod_comp_Ato1;
+        end if;
+
+        if mod_comp_1to2 >= 96 then
+            mod_comp_2to3 <= mod_comp_1to2 - 96;
+        else
+            mod_comp_2to3 <= mod_comp_1to2;
+        end if;
+
+        if mod_comp_2to3 >= 48 then
+            mod_comp_3to4 <= mod_comp_2to3 - 48;
+        else
+            mod_comp_3to4 <= mod_comp_2to3;
+        end if;
+
+        if mod_comp_3to4 >= 24 then
+            mod_comp_4to5 <= mod_comp_3to4 - 24;
+        else
+            mod_comp_4to5 <= mod_comp_3to4;
+        end if;
+
+        if mod_comp_4to5 >= 12 then
+            mod_comp_5to6 <= mod_comp_4to5 - 12;
+        else
+            mod_comp_5to6 <= mod_comp_4to5;
+        end if;
+
+        if mod_comp_5to6 >= 6 then
+            mod_comp_6to7 <= mod_comp_5to6 - 6;
+        else
+            mod_comp_6to7 <= mod_comp_5to6;
+        end if;
+
+        if mod_comp_6to7 >= 3 then
+            mod_comp_7toOut <= mod_comp_6to7 - 3;
+        else
+            mod_comp_7toOut <= mod_comp_6to7;
+        end if;
+
+        mod_out <= std_logic_vector(mod_comp_7toOut);
+
+        if FN(3) = '1' then
+            if A(7) = '1' and mod_comp_7toOut(1 downto 0) /= "00" then
+                mod_out <= std_logic_vector(3 - mod_comp_7toOut);
+            end if;
+        end if;
+
+    end process;
+end behavioral;
